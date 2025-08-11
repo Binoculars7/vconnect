@@ -37,7 +37,7 @@ export default function Navbar() {
             className="text-2xl font-bold text-orange-500 cursor-pointer"
             onClick={() => router.push("/")}
           >
-            POINT
+            Vconnect
           </div>
 
           {/* Desktop Navigation */}

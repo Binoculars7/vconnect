@@ -33,7 +33,7 @@ export default function ChatBot() {
   // Initial greeting when chat opens
   useEffect(() => {
     if (isOpen && !hasGreeted) {
-      const greetingMessage = `Hi there, I'm Pip 👋 Welcome to VConnect!
+      const greetingMessage = `Hi there, I'm Vconnect 👋 Welcome to VConnect!
 
 Please select from the following options (1-12):
 
@@ -58,18 +58,18 @@ Just type the number (1-12) to get your answer!`;
   }, [isOpen, hasGreeted]);
 
   const responses = {
-    "1": "**How to login:**\nGo to login, enter username/email & password, click Sign In.",
-    "2": "**How to signup:**\nSelect role (Volunteer/Event Owner), fill form, click Create Account.",
-    "3": "**About Vconnect:**\nVconnect links volunteers with nonprofit events.",
-    "4": "**How to create events (event owners):**\nClick Create Event, fill details, submit.",
-    "5": "**How to apply as a volunteer (volunteers):**\nBrowse events, read details, click Apply Now. Track status in dashboard.",
-    "6": "**How to approve/decline Volunteers (event owners):**\nReview apps in dashboard, approve ✅ or decline ❌.",
-    "7": "**How to check application status (volunteers):**\nCheck status (pending/approved/declined) in dashboard.",
-    "8": "**How to logout:**\nFrom profile menu, click Logout.",
-    "9": "**How to go back to home:**\nClick Vconnect logo, menu Home, browser back, or type URL.",
-    "10": "**How to go to dashboard:**\nFrom menu/profile dropdown: Volunteers see stats/history.",
-    "11": "**Event Owner Tips:**\nWrite clear event info, reply status, proceed with event, thank volunteers.",
-    "12": "**Volunteer Tips:**\nComplete profile, volunteer, go for the event, give feedback.",
+    "1": "How to login:\nGo to login, enter username/email & password, click Sign In.",
+    "2": "How to signup:\nSelect role (Volunteer/Event Owner), fill form, click Create Account.",
+    "3": "About Vconnect:\nVconnect is connecting volunteers to events that matter.",
+    "4": "How to create events (event owners):\nClick Create Event, fill details, submit.",
+    "5": "How to apply as a volunteer (volunteers):\nBrowse events, read details, click Apply Now. Track status in dashboard.",
+    "6": "How to approve/decline Volunteers (event owners):\nReview apps in dashboard, approve ✅ or decline ❌.",
+    "7": "How to check application status (volunteers):\nCheck status (pending/approved/declined) in dashboard.",
+    "8": "How to logout:\nFrom profile menu, click Logout.",
+    "9": "How to go back to home:\nClick Vconnect logo, menu Home, browser back, or type URL.",
+    "10": "How to go to dashboard:\nFrom menu bar or profile menu, click dashbard.",
+    "11": "Event Owner Tips:\nWrite clear event info, reply status, proceed with event, thank volunteers.",
+    "12": "Volunteer Tips:\nComplete profile, volunteer, go for the event, give feedback.",
   };
 
   const addTypingMessage = (text: string, isBot: boolean) => {
@@ -131,7 +131,7 @@ Just type the number (1-12) to get your answer!`;
     } else {
       // Invalid option
       setTimeout(() => {
-        const errorMessage = `Option not found! For more questions, please contact our staff at: support@vconnect.com
+        const errorMessage = `Option not found! For more answers, please contact: support@vconnect.com
 
 Please select from options 1-12:
 
@@ -192,10 +192,10 @@ Please select from options 1-12:
       {/* Chat Window */}
       {isOpen && (
         <Card className="fixed bottom-24 right-6 w-80 h-96 shadow-xl z-50 flex flex-col overflow-hidden">
-          <CardHeader className="bg-orange-500 text-white rounded-t-lg py-3 flex-shrink-0">
+          <CardHeader className="bg-orange-500 text-white rounded-t-lg py-3 flex-shrink-0 mt-[-25px]">
             <CardTitle className="text-lg flex items-center gap-2">
               <MessageCircle className="w-5 h-5" />
-              Chat with Pip
+              Chat with Vconnect
             </CardTitle>
           </CardHeader>
 

@@ -75,10 +75,11 @@ export default function HomePage() {
             <br />
             to events that matter.
           </h1>
-          <p className="text-xl text-gray-600 dark:text-gray-300 mb-8 max-w-2xl mx-auto">
-            Whether you have 10 or 10,000 volunteers, our easy-to-use tools are
-            built to streamline your volunteer program. Plus, we're proud to be
-            #1 in customer support — here to help at every step.
+          <p className="text-lg text-gray-600 dark:text-gray-300 mb-8 max-w-2xl mx-auto">
+            Whether you need 10 or 10,000 volunteers, our platform is an
+            easy-to-use tools built to get volunteers for your events. Plus,
+            we're proud to be #1 in customer support and we are here to help at
+            every step.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Button
@@ -92,13 +93,14 @@ export default function HomePage() {
               variant="outline"
               size="lg"
               className="border-orange-500 text-orange-500 hover:bg-orange-50 px-8 py-3 text-lg"
+              onClick={() => router.push("/login")}
             >
               Login
             </Button>
           </div>
           <button
             className="mt-6 text-orange-500 hover:text-orange-600 font-medium flex items-center mx-auto"
-            onClick={() => router.push("/volunteer-signup")}
+            onClick={() => router.push("/signup")}
           >
             I'm a volunteer →
           </button>
@@ -163,8 +165,8 @@ export default function HomePage() {
                   key={event.id}
                   className="hover:shadow-lg transition-shadow"
                 >
-                  <div className="h-48 bg-gradient-to-br from-orange-100 to-amber-100 dark:from-orange-900 to-amber-900 rounded-t-lg flex items-center justify-center mt-[-25px]">
-                    <Calendar className="w-16 h-16 text-orange-500" />
+                  <div className="h-48 bg-gradient-to-br bg-[#e7cb89] mt-[-25px]   dark:bg-amber-900 rounded-t-lg flex items-center justify-center">
+                    <Calendar className="w-16 h-16 text-orange-500 dark:text-white" />
                   </div>
                   <CardHeader>
                     <div className="flex justify-between items-start">

@@ -1,83 +1,289 @@
-'use client'
+"use client";
 
-import { useState } from 'react'
-import { useRouter } from 'next/navigation'
-import { Button } from '@/components/ui/button'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
-import { useAuth } from '@/contexts/auth-context'
-import { Eye, EyeOff, Users, Calendar } from 'lucide-react'
-import Navbar from '@/components/navbar'
+import { useState } from "react";
+import { useRouter } from "next/navigation";
+import { Button } from "@/components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { useAuth } from "@/contexts/auth-context";
+import { Eye, EyeOff, Users, Calendar } from "lucide-react";
+import Navbar from "@/components/navbar";
 
 export default function SignupPage() {
-  const [userType, setUserType] = useState<'volunteer' | 'event-owner' | null>(null)
+  const [userType, setUserType] = useState<"volunteer" | "event-owner" | null>(
+    null
+  );
   const [formData, setFormData] = useState({
-    fullName: '',
-    username: '',
-    email: '',
-    password: '',
-    confirmPassword: '',
-    country: ''
-  })
-  const [showPassword, setShowPassword] = useState(false)
-  const [showConfirmPassword, setShowConfirmPassword] = useState(false)
-  const [loading, setLoading] = useState(false)
-  const [error, setError] = useState('')
+    fullName: "",
+    username: "",
+    email: "",
+    password: "",
+    confirmPassword: "",
+    country: "",
+  });
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
 
-  const { signup } = useAuth()
-  const router = useRouter()
-
+  const { signup } = useAuth();
+  const router = useRouter();
+  // List of countries for the select dropdown
   const countries = [
-    'United States', 'Canada', 'United Kingdom', 'Australia', 'Germany', 
-    'France', 'Japan', 'Brazil', 'India', 'South Africa', 'Other'
-  ]
+    "Afghanistan",
+    "Albania",
+    "Algeria",
+    "Andorra",
+    "Angola",
+    "Antigua and Barbuda",
+    "Argentina",
+    "Armenia",
+    "Australia",
+    "Austria",
+    "Azerbaijan",
+    "Bahamas",
+    "Bahrain",
+    "Bangladesh",
+    "Barbados",
+    "Belarus",
+    "Belgium",
+    "Belize",
+    "Benin",
+    "Bhutan",
+    "Bolivia",
+    "Bosnia and Herzegovina",
+    "Botswana",
+    "Brazil",
+    "Brunei",
+    "Bulgaria",
+    "Burkina Faso",
+    "Burundi",
+    "Cabo Verde",
+    "Cambodia",
+    "Cameroon",
+    "Canada",
+    "Central African Republic",
+    "Chad",
+    "Chile",
+    "China",
+    "Colombia",
+    "Comoros",
+    "Congo (Congo-Brazzaville)",
+    "Costa Rica",
+    "Croatia",
+    "Cuba",
+    "Cyprus",
+    "Czechia (Czech Republic)",
+    "Democratic Republic of the Congo",
+    "Denmark",
+    "Djibouti",
+    "Dominica",
+    "Dominican Republic",
+    "Ecuador",
+    "Egypt",
+    "El Salvador",
+    "Equatorial Guinea",
+    "Eritrea",
+    "Estonia",
+    "Eswatini (fmr. Swaziland)",
+    "Ethiopia",
+    "Fiji",
+    "Finland",
+    "France",
+    "Gabon",
+    "Gambia",
+    "Georgia",
+    "Germany",
+    "Ghana",
+    "Greece",
+    "Grenada",
+    "Guatemala",
+    "Guinea",
+    "Guinea-Bissau",
+    "Guyana",
+    "Haiti",
+    "Holy See (Vatican City)",
+    "Honduras",
+    "Hungary",
+    "Iceland",
+    "India",
+    "Indonesia",
+    "Iran",
+    "Iraq",
+    "Ireland",
+    "Israel",
+    "Italy",
+    "Jamaica",
+    "Japan",
+    "Jordan",
+    "Kazakhstan",
+    "Kenya",
+    "Kiribati",
+    "Kuwait",
+    "Kyrgyzstan",
+    "Laos",
+    "Latvia",
+    "Lebanon",
+    "Lesotho",
+    "Liberia",
+    "Libya",
+    "Liechtenstein",
+    "Lithuania",
+    "Luxembourg",
+    "Madagascar",
+    "Malawi",
+    "Malaysia",
+    "Maldives",
+    "Mali",
+    "Malta",
+    "Marshall Islands",
+    "Mauritania",
+    "Mauritius",
+    "Mexico",
+    "Micronesia",
+    "Moldova",
+    "Monaco",
+    "Mongolia",
+    "Montenegro",
+    "Morocco",
+    "Mozambique",
+    "Myanmar (formerly Burma)",
+    "Namibia",
+    "Nauru",
+    "Nepal",
+    "Netherlands",
+    "New Zealand",
+    "Nicaragua",
+    "Niger",
+    "Nigeria",
+    "North Korea",
+    "North Macedonia",
+    "Norway",
+    "Oman",
+    "Pakistan",
+    "Palau",
+    "Palestine State",
+    "Panama",
+    "Papua New Guinea",
+    "Paraguay",
+    "Peru",
+    "Philippines",
+    "Poland",
+    "Portugal",
+    "Qatar",
+    "Romania",
+    "Russia",
+    "Rwanda",
+    "Saint Kitts and Nevis",
+    "Saint Lucia",
+    "Saint Vincent and the Grenadines",
+    "Samoa",
+    "San Marino",
+    "Sao Tome and Principe",
+    "Saudi Arabia",
+    "Senegal",
+    "Serbia",
+    "Seychelles",
+    "Sierra Leone",
+    "Singapore",
+    "Slovakia",
+    "Slovenia",
+    "Solomon Islands",
+    "Somalia",
+    "South Africa",
+    "South Korea",
+    "South Sudan",
+    "Spain",
+    "Sri Lanka",
+    "Sudan",
+    "Suriname",
+    "Sweden",
+    "Switzerland",
+    "Syria",
+    "Tajikistan",
+    "Tanzania",
+    "Thailand",
+    "Timor-Leste",
+    "Togo",
+    "Tonga",
+    "Trinidad and Tobago",
+    "Tunisia",
+    "Turkey",
+    "Turkmenistan",
+    "Tuvalu",
+    "Uganda",
+    "Ukraine",
+    "United Arab Emirates",
+    "United Kingdom",
+    "United States of America",
+    "Uruguay",
+    "Uzbekistan",
+    "Vanuatu",
+    "Venezuela",
+    "Vietnam",
+    "Yemen",
+    "Zambia",
+    "Zimbabwe",
+  ];
 
   const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-    setError('')
+    e.preventDefault();
+    setError("");
 
     if (formData.password !== formData.confirmPassword) {
-      setError('Passwords do not match')
-      return
+      setError("Passwords do not match");
+      return;
     }
 
     if (formData.password.length < 6) {
-      setError('Password must be at least 6 characters')
-      return
+      setError("Password must be at least 6 characters");
+      return;
     }
 
     if (!userType) {
-      setError('Please select a user type')
-      return
+      setError("Please select a user type");
+      return;
     }
 
-    setLoading(true)
+    setLoading(true);
 
     try {
       await signup(formData.email, formData.password, {
         fullName: formData.fullName,
         username: formData.username,
         country: formData.country,
-        userType
-      })
-      router.push('/dashboard')
+        userType,
+      });
+      router.push("/dashboard");
     } catch (error: any) {
-      setError(error.message || 'Failed to create account')
+      setError(error.message || "Failed to create account");
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
-  }
+  };
 
   const handleInputChange = (field: string, value: string) => {
-    setFormData(prev => ({ ...prev, [field]: value }))
-  }
+    setFormData((prev) => ({ ...prev, [field]: value }));
+  };
 
   return (
     <div className="min-h-screen bg-background">
       <Navbar />
-      
+
       <div className="flex items-center justify-center py-12 px-4">
         <Card className="w-full max-w-md">
           <CardHeader className="text-center">
@@ -86,25 +292,27 @@ export default function SignupPage() {
               Join our community and start making a difference
             </CardDescription>
           </CardHeader>
-          
+
           <CardContent>
             {!userType ? (
               <div className="space-y-4">
-                <h3 className="text-lg font-semibold text-center mb-6">Choose your role</h3>
-                
+                <h3 className="text-lg font-semibold text-center mb-6">
+                  Choose your role
+                </h3>
+
                 <Button
                   variant="outline"
                   className="w-full h-20 flex flex-col items-center gap-2 hover:bg-orange-50 hover:border-orange-500"
-                  onClick={() => setUserType('volunteer')}
+                  onClick={() => setUserType("volunteer")}
                 >
                   <Users className="w-8 h-8 text-orange-500" />
                   <span className="font-medium">Sign up as Volunteer</span>
                 </Button>
-                
+
                 <Button
                   variant="outline"
                   className="w-full h-20 flex flex-col items-center gap-2 hover:bg-orange-50 hover:border-orange-500"
-                  onClick={() => setUserType('event-owner')}
+                  onClick={() => setUserType("event-owner")}
                 >
                   <Calendar className="w-8 h-8 text-orange-500" />
                   <span className="font-medium">Sign up as Event Owner</span>
@@ -121,7 +329,8 @@ export default function SignupPage() {
                     ← Back to role selection
                   </Button>
                   <h3 className="text-lg font-semibold mt-2">
-                    {userType === 'volunteer' ? 'Volunteer' : 'Event Owner'} Registration
+                    {userType === "volunteer" ? "Volunteer" : "Event Owner"}{" "}
+                    Registration
                   </h3>
                 </div>
 
@@ -137,7 +346,9 @@ export default function SignupPage() {
                     id="fullName"
                     type="text"
                     value={formData.fullName}
-                    onChange={(e) => handleInputChange('fullName', e.target.value)}
+                    onChange={(e) =>
+                      handleInputChange("fullName", e.target.value)
+                    }
                     required
                   />
                 </div>
@@ -148,7 +359,9 @@ export default function SignupPage() {
                     id="username"
                     type="text"
                     value={formData.username}
-                    onChange={(e) => handleInputChange('username', e.target.value)}
+                    onChange={(e) =>
+                      handleInputChange("username", e.target.value)
+                    }
                     required
                   />
                 </div>
@@ -159,7 +372,7 @@ export default function SignupPage() {
                     id="email"
                     type="email"
                     value={formData.email}
-                    onChange={(e) => handleInputChange('email', e.target.value)}
+                    onChange={(e) => handleInputChange("email", e.target.value)}
                     required
                   />
                 </div>
@@ -169,9 +382,11 @@ export default function SignupPage() {
                   <div className="relative">
                     <Input
                       id="password"
-                      type={showPassword ? 'text' : 'password'}
+                      type={showPassword ? "text" : "password"}
                       value={formData.password}
-                      onChange={(e) => handleInputChange('password', e.target.value)}
+                      onChange={(e) =>
+                        handleInputChange("password", e.target.value)
+                      }
                       required
                     />
                     <Button
@@ -181,7 +396,11 @@ export default function SignupPage() {
                       className="absolute right-0 top-0 h-full px-3"
                       onClick={() => setShowPassword(!showPassword)}
                     >
-                      {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                      {showPassword ? (
+                        <EyeOff className="w-4 h-4" />
+                      ) : (
+                        <Eye className="w-4 h-4" />
+                      )}
                     </Button>
                   </div>
                 </div>
@@ -191,9 +410,11 @@ export default function SignupPage() {
                   <div className="relative">
                     <Input
                       id="confirmPassword"
-                      type={showConfirmPassword ? 'text' : 'password'}
+                      type={showConfirmPassword ? "text" : "password"}
                       value={formData.confirmPassword}
-                      onChange={(e) => handleInputChange('confirmPassword', e.target.value)}
+                      onChange={(e) =>
+                        handleInputChange("confirmPassword", e.target.value)
+                      }
                       required
                     />
                     <Button
@@ -201,16 +422,27 @@ export default function SignupPage() {
                       variant="ghost"
                       size="sm"
                       className="absolute right-0 top-0 h-full px-3"
-                      onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                      onClick={() =>
+                        setShowConfirmPassword(!showConfirmPassword)
+                      }
                     >
-                      {showConfirmPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                      {showConfirmPassword ? (
+                        <EyeOff className="w-4 h-4" />
+                      ) : (
+                        <Eye className="w-4 h-4" />
+                      )}
                     </Button>
                   </div>
                 </div>
 
                 <div className="space-y-2">
                   <Label htmlFor="country">Country</Label>
-                  <Select value={formData.country} onValueChange={(value) => handleInputChange('country', value)}>
+                  <Select
+                    value={formData.country}
+                    onValueChange={(value) =>
+                      handleInputChange("country", value)
+                    }
+                  >
                     <SelectTrigger>
                       <SelectValue placeholder="Select your country" />
                     </SelectTrigger>
@@ -229,14 +461,16 @@ export default function SignupPage() {
                   className="w-full bg-orange-500 hover:bg-orange-600"
                   disabled={loading}
                 >
-                  {loading ? 'Creating Account...' : 'Create Account'}
+                  {loading ? "Creating Account..." : "Create Account"}
                 </Button>
 
                 <div className="text-center text-sm">
-                  <span className="text-gray-600 dark:text-gray-400">Already have an account? </span>
+                  <span className="text-gray-600 dark:text-gray-400">
+                    Already have an account?{" "}
+                  </span>
                   <button
                     type="button"
-                    onClick={() => router.push('/login')}
+                    onClick={() => router.push("/login")}
                     className="text-orange-500 hover:text-orange-600 font-medium"
                   >
                     Sign in
@@ -248,5 +482,5 @@ export default function SignupPage() {
         </Card>
       </div>
     </div>
-  )
+  );
 }

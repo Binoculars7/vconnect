@@ -302,8 +302,8 @@ export default function EventsPage() {
                 key={event.id}
                 className="hover:shadow-lg transition-shadow"
               >
-                <div className="h-48 bg-gradient-to-br from-orange-100 to-amber-100 dark:from-orange-900 dark:to-amber-900 rounded-t-lg flex items-center justify-center">
-                  <Calendar className="w-16 h-16 text-orange-500" />
+                <div className="h-48 bg-gradient-to-br bg-[#e7cb89] mt-[-25px]   dark:bg-amber-900 rounded-t-lg flex items-center justify-center">
+                  <Calendar className="w-16 h-16 text-orange-500 dark:text-white" />
                 </div>
                 <CardHeader>
                   <div className="flex justify-between items-start gap-2">
