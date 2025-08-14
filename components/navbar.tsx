@@ -157,15 +157,6 @@ export default function Navbar() {
               >
                 Events
               </button>
-              <button
-                className="text-left text-gray-700 dark:text-gray-300 hover:text-orange-500"
-                onClick={() => {
-                  router.push("/about");
-                  setMobileMenuOpen(false);
-                }}
-              >
-                About
-              </button>
 
               {user ? (
                 <>
