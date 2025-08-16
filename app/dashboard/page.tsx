@@ -908,6 +908,17 @@ export default function DashboardPage() {
                                 <Button
                                   size="sm"
                                   variant="outline"
+                                  className="text-green-600 hover:text-green-700"
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    handleApplicationStatus(app.id, "approved");
+                                  }}
+                                >
+                                  <Check className="w-4 h-4" />
+                                </Button>
+                                <Button
+                                  size="sm"
+                                  variant="outline"
                                   className="text-red-600 hover:text-red-700"
                                   onClick={(e) => {
                                     e.stopPropagation();
