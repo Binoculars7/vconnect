@@ -145,7 +145,7 @@ const VolunteerInfoModal = ({
                 <p className="text-sm">
                   {volunteerInfo?.country ||
                     volunteerInfo?.location ||
-                    "Location not specified"}
+                    "Nigeria"}
                 </p>
               </div>
 
