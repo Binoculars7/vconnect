@@ -25,6 +25,8 @@ import {
   Globe,
   FileText,
   Loader2,
+  Trash2,
+  AlertTriangle,
 } from "lucide-react";
 import {
   getEventsByOwner,
@@ -35,6 +37,65 @@ import {
   getUserProfile,
 } from "@/lib/firebase";
 import Navbar from "@/components/navbar";
+
+import { db } from "@/lib/firebase";
+import {
+  doc,
+  deleteDoc,
+  collection,
+  getDocs,
+  query,
+  where,
+  writeBatch,
+} from "firebase/firestore";
+
+// === IMPROVED deleteEvent function ===
+async function deleteEvent(eventId: string) {
+  if (!eventId) {
+    throw new Error("Event ID is required");
+  }
+
+  console.log(`Starting deletion process for event: ${eventId}`);
+
+  try {
+    const batch = writeBatch(db);
+
+    // First, find and delete all applications linked to this event
+    const appsQuery = query(
+      collection(db, "applications"),
+      where("eventId", "==", eventId)
+    );
+
+    const appsSnapshot = await getDocs(appsQuery);
+    console.log(`Found ${appsSnapshot.size} applications to delete`);
+
+    // Add application deletions to batch
+    appsSnapshot.forEach((appDoc) => {
+      console.log(`Deleting application: ${appDoc.id}`);
+      batch.delete(appDoc.ref);
+    });
+
+    // Add event deletion to batch
+    const eventRef = doc(db, "events", eventId);
+    batch.delete(eventRef);
+    console.log(`Added event deletion to batch: ${eventId}`);
+
+    // Commit all deletions atomically
+    await batch.commit();
+    console.log(
+      `Successfully deleted event ${eventId} and ${appsSnapshot.size} applications`
+    );
+
+    return { success: true, deletedApplications: appsSnapshot.size };
+  } catch (error) {
+    console.error("Error in deleteEvent:", error);
+    throw new Error(
+      `Failed to delete event: ${
+        error instanceof Error ? error.message : "Unknown error"
+      }`
+    );
+  }
+}
 
 // Define types locally to avoid import issues
 interface Event {
@@ -78,7 +139,79 @@ interface VolunteerProfile {
   userType?: string;
 }
 
-// Modal component for displaying volunteer information
+// Delete Confirmation Modal
+const DeleteConfirmationModal = ({
+  isOpen,
+  onClose,
+  onConfirm,
+  eventName,
+  isDeleting,
+}: {
+  isOpen: boolean;
+  onClose: () => void;
+  onConfirm: () => void;
+  eventName: string;
+  isDeleting: boolean;
+}) => {
+  if (!isOpen) return null;
+
+  return (
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+      <div className="bg-white dark:bg-gray-800 rounded-lg max-w-md w-full">
+        <div className="p-6">
+          <div className="flex items-center gap-3 mb-4">
+            <div className="bg-red-100 dark:bg-red-900 p-2 rounded-full">
+              <AlertTriangle className="w-6 h-6 text-red-600 dark:text-red-400" />
+            </div>
+            <div>
+              <h3 className="text-lg font-semibold">Delete Event</h3>
+              <p className="text-sm text-gray-600 dark:text-gray-400">
+                This action cannot be undone
+              </p>
+            </div>
+          </div>
+
+          <div className="mb-6">
+            <p className="text-gray-700 dark:text-gray-300 mb-2">
+              Are you sure you want to delete "{eventName}"?
+            </p>
+            <p className="text-sm text-gray-600 dark:text-gray-400">
+              This will permanently delete the event and all associated
+              applications. Volunteers who have applied will no longer be able
+              to access this event.
+            </p>
+          </div>
+
+          <div className="flex gap-3 justify-end">
+            <Button variant="outline" onClick={onClose} disabled={isDeleting}>
+              Cancel
+            </Button>
+            <Button
+              variant="destructive"
+              onClick={onConfirm}
+              disabled={isDeleting}
+              className="min-w-[100px]"
+            >
+              {isDeleting ? (
+                <>
+                  <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                  Deleting...
+                </>
+              ) : (
+                <>
+                  <Trash2 className="w-4 h-4 mr-2" />
+                  Delete
+                </>
+              )}
+            </Button>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+// Volunteer Info Modal
 const VolunteerInfoModal = ({
   application,
   isOpen,
@@ -213,6 +346,7 @@ export default function DashboardPage() {
   }>({});
   const [loadingData, setLoadingData] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [successMessage, setSuccessMessage] = useState<string | null>(null);
 
   // Modal state
   const [selectedApplication, setSelectedApplication] =
@@ -222,6 +356,11 @@ export default function DashboardPage() {
   );
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [loadingVolunteerInfo, setLoadingVolunteerInfo] = useState(false);
+
+  // Delete modal state
+  const [deleteModalOpen, setDeleteModalOpen] = useState(false);
+  const [eventToDelete, setEventToDelete] = useState<Event | null>(null);
+  const [isDeleting, setIsDeleting] = useState(false);
 
   // Filter & pagination state
   const [filterTerm, setFilterTerm] = useState("");
@@ -374,6 +513,79 @@ export default function DashboardPage() {
     }
   };
 
+  // === IMPROVED handleDeleteEvent function ===
+  const handleDeleteEvent = async () => {
+    if (!eventToDelete) {
+      console.error("No event selected for deletion");
+      return;
+    }
+
+    console.log("Starting delete process for event:", eventToDelete);
+
+    try {
+      setIsDeleting(true);
+      setError(null); // Clear any existing errors
+
+      const result = await deleteEvent(eventToDelete.id);
+      console.log("Delete result:", result);
+
+      // Close modal first
+      setDeleteModalOpen(false);
+      setEventToDelete(null);
+
+      // Show success message
+      setSuccessMessage(
+        `Event "${
+          eventToDelete.name || eventToDelete.title
+        }" was successfully deleted along with ${
+          result.deletedApplications
+        } applications.`
+      );
+
+      // Refresh data to reflect changes
+      await fetchData();
+    } catch (error) {
+      console.error("Error deleting event:", error);
+
+      // Set user-friendly error message
+      const errorMessage =
+        error instanceof Error ? error.message : "Unknown error occurred";
+      setError(`Failed to delete event: ${errorMessage}`);
+
+      // Don't close modal on error so user can try again
+    } finally {
+      setIsDeleting(false);
+    }
+  };
+
+  // === IMPROVED openDeleteModal function ===
+  const openDeleteModal = (event: Event) => {
+    console.log("Opening delete modal for event:", event);
+
+    if (!event || !event.id) {
+      console.error("Invalid event data:", event);
+      setError("Cannot delete event: Invalid event data");
+      return;
+    }
+
+    setEventToDelete(event);
+    setDeleteModalOpen(true);
+    setError(null); // Clear any existing errors
+  };
+
+  // === IMPROVED closeDeleteModal function ===
+  const closeDeleteModal = () => {
+    if (isDeleting) {
+      console.log("Cannot close modal while deletion is in progress");
+      return;
+    }
+
+    console.log("Closing delete modal");
+    setDeleteModalOpen(false);
+    setEventToDelete(null);
+    setError(null); // Clear any errors when closing
+  };
+
   const handleVolunteerClick = async (application: Application) => {
     // Validate that we have a user ID to fetch
     const userId = application.userId || application.uid;
@@ -413,13 +625,20 @@ export default function DashboardPage() {
     setLoadingVolunteerInfo(false);
   };
 
-  // Clear error after a few seconds
+  // Clear error and success messages after a few seconds
   useEffect(() => {
     if (error) {
       const timer = setTimeout(() => setError(null), 5000);
       return () => clearTimeout(timer);
     }
   }, [error]);
+
+  useEffect(() => {
+    if (successMessage) {
+      const timer = setTimeout(() => setSuccessMessage(null), 5000);
+      return () => clearTimeout(timer);
+    }
+  }, [successMessage]);
 
   // Calculate paginated data for owner applications
   const allOwnerApplications =
@@ -498,6 +717,15 @@ export default function DashboardPage() {
         </div>
       )}
 
+      {/* Success notification */}
+      {successMessage && (
+        <div className="max-w-6xl mx-auto px-4 pt-4">
+          <div className="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded mb-4">
+            {successMessage}
+          </div>
+        </div>
+      )}
+
       <div className="max-w-6xl mx-auto py-8 px-4">
         <div className="flex justify-between items-center mb-8">
           <div>
@@ -555,12 +783,36 @@ export default function DashboardPage() {
                     >
                       <CardHeader>
                         <div className="flex justify-between items-start">
-                          <CardTitle className="text-lg line-clamp-2">
+                          <CardTitle className="text-lg line-clamp-2 flex-1 pr-2">
                             {event.name || event.title || "Untitled Event"}
                           </CardTitle>
-                          <Badge variant="secondary">
-                            {event.category || "General"}
-                          </Badge>
+                          <div className="flex items-center gap-2 flex-shrink-0">
+                            <Badge variant="secondary">
+                              {event.category || "General"}
+                            </Badge>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              className="h-8 w-8 p-0 text-red-500 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-900/20"
+                              onClick={(e) => {
+                                e.preventDefault();
+                                e.stopPropagation();
+                                console.log(
+                                  "Delete button clicked for event:",
+                                  event
+                                );
+                                openDeleteModal(event);
+                              }}
+                              title="Delete event"
+                              disabled={isDeleting}
+                            >
+                              {isDeleting && eventToDelete?.id === event.id ? (
+                                <Loader2 className="w-4 h-4 animate-spin" />
+                              ) : (
+                                <Trash2 className="w-4 h-4" />
+                              )}
+                            </Button>
+                          </div>
                         </div>
                         <CardDescription className="line-clamp-2">
                           {event.description || "No description provided"}
@@ -653,17 +905,6 @@ export default function DashboardPage() {
                             </Badge>
                             {(app.status === "pending" || !app.status) && (
                               <div className="flex gap-1">
-                                <Button
-                                  size="sm"
-                                  variant="outline"
-                                  className="text-green-600 hover:text-green-700"
-                                  onClick={(e) => {
-                                    e.stopPropagation();
-                                    handleApplicationStatus(app.id, "approved");
-                                  }}
-                                >
-                                  <Check className="w-4 h-4" />
-                                </Button>
                                 <Button
                                   size="sm"
                                   variant="outline"
@@ -889,6 +1130,17 @@ export default function DashboardPage() {
         onClose={closeModal}
         volunteerInfo={volunteerInfo}
         isLoading={loadingVolunteerInfo}
+      />
+
+      {/* Delete Confirmation Modal */}
+      <DeleteConfirmationModal
+        isOpen={deleteModalOpen}
+        onClose={closeDeleteModal}
+        onConfirm={handleDeleteEvent}
+        eventName={
+          eventToDelete?.name || eventToDelete?.title || "Unknown Event"
+        }
+        isDeleting={isDeleting}
       />
     </div>
   );
