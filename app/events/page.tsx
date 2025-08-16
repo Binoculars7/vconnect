@@ -545,7 +545,7 @@ export default function EventsPage() {
                   <h3 className="font-semibold text-lg mb-3">
                     About This Event
                   </h3>
-                  <DialogDescription className="text-base leading-relaxed">
+                  <DialogDescription className="text-base leading-relaxed text-justify whitespace-pre-line">
                     {selectedEvent.description || "No description available"}
                   </DialogDescription>
                 </div>
@@ -557,22 +557,6 @@ export default function EventsPage() {
                       <h4 className="font-medium mb-2">Sponsors</h4>
                       <p className="text-sm text-gray-600 dark:text-gray-400">
                         {selectedEvent.sponsors}
-                      </p>
-                    </div>
-                  )}
-                  {selectedEvent.requirements && (
-                    <div>
-                      <h4 className="font-medium mb-2">Requirements</h4>
-                      <p className="text-sm text-gray-600 dark:text-gray-400">
-                        {selectedEvent.requirements}
-                      </p>
-                    </div>
-                  )}
-                  {selectedEvent.skills && (
-                    <div>
-                      <h4 className="font-medium mb-2">Skills Needed</h4>
-                      <p className="text-sm text-gray-600 dark:text-gray-400">
-                        {selectedEvent.skills}
                       </p>
                     </div>
                   )}

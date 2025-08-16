@@ -311,13 +311,13 @@ export default function HomePage() {
                       </div>
                     </div>
 
-                    {selectedEvent.organizer && (
+                    {selectedEvent.ownerName && (
                       <div className="flex items-center gap-3">
                         <User className="w-5 h-5 text-orange-500" />
                         <div>
                           <p className="font-medium">Organizer</p>
                           <p className="text-sm text-gray-600 dark:text-gray-400">
-                            {selectedEvent.organizer}
+                            {selectedEvent.ownerName}
                           </p>
                         </div>
                       </div>
@@ -330,32 +330,22 @@ export default function HomePage() {
                   <h3 className="font-semibold text-lg mb-3">
                     About This Event
                   </h3>
-                  <DialogDescription className="text-base leading-relaxed">
-                    {selectedEvent.description}
+                  <DialogDescription className="text-base leading-relaxed text-justify whitespace-pre-line">
+                    {selectedEvent.description || "No description available"}
                   </DialogDescription>
                 </div>
 
                 {/* Additional Details */}
-                {(selectedEvent.requirements || selectedEvent.skills) && (
-                  <div className="space-y-3">
-                    {selectedEvent.requirements && (
-                      <div>
-                        <h4 className="font-medium mb-2">Requirements</h4>
-                        <p className="text-sm text-gray-600 dark:text-gray-400">
-                          {selectedEvent.requirements}
-                        </p>
-                      </div>
-                    )}
-                    {selectedEvent.skills && (
-                      <div>
-                        <h4 className="font-medium mb-2">Skills Needed</h4>
-                        <p className="text-sm text-gray-600 dark:text-gray-400">
-                          {selectedEvent.skills}
-                        </p>
-                      </div>
-                    )}
-                  </div>
-                )}
+                <div className="space-y-3">
+                  {selectedEvent.sponsors && (
+                    <div>
+                      <h4 className="font-medium mb-2">Sponsors</h4>
+                      <p className="text-sm text-gray-600 dark:text-gray-400">
+                        {selectedEvent.sponsors}
+                      </p>
+                    </div>
+                  )}
+                </div>
 
                 {/* Action Buttons */}
                 <div className="flex gap-3 pt-4">
