@@ -11,7 +11,24 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Calendar, MapPin, Users, Heart, Globe, Lightbulb } from "lucide-react";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import {
+  Calendar,
+  MapPin,
+  Users,
+  Heart,
+  Globe,
+  Lightbulb,
+  X,
+  Clock,
+  User,
+} from "lucide-react";
 import { useAuth } from "@/contexts/auth-context";
 import { getEvents } from "@/lib/firebase";
 import { Event } from "@/types";
@@ -23,6 +40,8 @@ export default function HomePage() {
   const router = useRouter();
   const [events, setEvents] = useState<Event[]>([]);
   const [loading, setLoading] = useState(true);
+  const [selectedEvent, setSelectedEvent] = useState<Event | null>(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
 
   useEffect(() => {
     const fetchEvents = async () => {
@@ -45,6 +64,32 @@ export default function HomePage() {
     { name: "Community", icon: Users, color: "bg-purple-100 text-purple-800" },
     { name: "Healthcare", icon: Heart, color: "bg-red-100 text-red-800" },
   ];
+
+  const handleEventClick = (event: Event) => {
+    setSelectedEvent(event);
+    setIsModalOpen(true);
+  };
+
+  const handleApplyClick = (e: React.MouseEvent) => {
+    e.stopPropagation(); // Prevent the card click event
+    router.push(user ? "/events" : "/login");
+  };
+
+  const formatDate = (dateString: string) => {
+    return new Date(dateString).toLocaleDateString("en-US", {
+      weekday: "long",
+      year: "numeric",
+      month: "long",
+      day: "numeric",
+    });
+  };
+
+  const formatTime = (dateString: string) => {
+    return new Date(dateString).toLocaleTimeString("en-US", {
+      hour: "2-digit",
+      minute: "2-digit",
+    });
+  };
 
   return (
     <div className="min-h-screen bg-background">
@@ -163,9 +208,10 @@ export default function HomePage() {
               {events.map((event) => (
                 <Card
                   key={event.id}
-                  className="hover:shadow-lg transition-shadow"
+                  className="hover:shadow-lg transition-shadow cursor-pointer"
+                  onClick={() => handleEventClick(event)}
                 >
-                  <div className="h-48 bg-gradient-to-br bg-[#e7cb89] mt-[-25px]   dark:bg-amber-900 rounded-t-lg flex items-center justify-center">
+                  <div className="h-48 bg-gradient-to-br bg-[#e7cb89] mt-[-25px] dark:bg-amber-900 rounded-t-lg flex items-center justify-center">
                     <Calendar className="w-16 h-16 text-orange-500 dark:text-white" />
                   </div>
                   <CardHeader>
@@ -192,7 +238,7 @@ export default function HomePage() {
                     </div>
                     <Button
                       className="w-full mt-4 bg-orange-500 hover:bg-orange-600"
-                      onClick={() => router.push(user ? "/events" : "/login")}
+                      onClick={handleApplyClick}
                     >
                       {user ? "Apply Now" : "Login to Apply"}
                     </Button>
@@ -203,6 +249,129 @@ export default function HomePage() {
           )}
         </div>
       </section>
+
+      {/* Event Details Modal */}
+      <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
+        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+          {selectedEvent && (
+            <>
+              <DialogHeader>
+                <div className="flex justify-between items-start">
+                  <div className="flex-1">
+                    <DialogTitle className="text-2xl font-bold text-left">
+                      {selectedEvent.name}
+                    </DialogTitle>
+                    <div className="flex items-center gap-2 mt-2">
+                      <Badge variant="secondary" className="text-sm">
+                        {selectedEvent.category}
+                      </Badge>
+                    </div>
+                  </div>
+                </div>
+              </DialogHeader>
+
+              <div className="space-y-6">
+                {/* Event Banner */}
+                <div className="h-48 bg-gradient-to-br from-orange-400 to-orange-600 rounded-lg flex items-center justify-center">
+                  <Calendar className="w-20 h-20 text-white" />
+                </div>
+
+                {/* Event Details */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="space-y-3">
+                    <div className="flex items-center gap-3">
+                      <Calendar className="w-5 h-5 text-orange-500" />
+                      <div>
+                        <p className="font-medium">Date</p>
+                        <p className="text-sm text-gray-600 dark:text-gray-400">
+                          {formatDate(selectedEvent.time)}
+                        </p>
+                      </div>
+                    </div>
+
+                    <div className="flex items-center gap-3">
+                      <Clock className="w-5 h-5 text-orange-500" />
+                      <div>
+                        <p className="font-medium">Time</p>
+                        <p className="text-sm text-gray-600 dark:text-gray-400">
+                          {formatTime(selectedEvent.time)}
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="space-y-3">
+                    <div className="flex items-center gap-3">
+                      <MapPin className="w-5 h-5 text-orange-500" />
+                      <div>
+                        <p className="font-medium">Location</p>
+                        <p className="text-sm text-gray-600 dark:text-gray-400">
+                          {selectedEvent.venue}
+                        </p>
+                      </div>
+                    </div>
+
+                    {selectedEvent.organizer && (
+                      <div className="flex items-center gap-3">
+                        <User className="w-5 h-5 text-orange-500" />
+                        <div>
+                          <p className="font-medium">Organizer</p>
+                          <p className="text-sm text-gray-600 dark:text-gray-400">
+                            {selectedEvent.organizer}
+                          </p>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                </div>
+
+                {/* Description */}
+                <div>
+                  <h3 className="font-semibold text-lg mb-3">
+                    About This Event
+                  </h3>
+                  <DialogDescription className="text-base leading-relaxed">
+                    {selectedEvent.description}
+                  </DialogDescription>
+                </div>
+
+                {/* Additional Details */}
+                {(selectedEvent.requirements || selectedEvent.skills) && (
+                  <div className="space-y-3">
+                    {selectedEvent.requirements && (
+                      <div>
+                        <h4 className="font-medium mb-2">Requirements</h4>
+                        <p className="text-sm text-gray-600 dark:text-gray-400">
+                          {selectedEvent.requirements}
+                        </p>
+                      </div>
+                    )}
+                    {selectedEvent.skills && (
+                      <div>
+                        <h4 className="font-medium mb-2">Skills Needed</h4>
+                        <p className="text-sm text-gray-600 dark:text-gray-400">
+                          {selectedEvent.skills}
+                        </p>
+                      </div>
+                    )}
+                  </div>
+                )}
+
+                {/* Action Buttons */}
+                <div className="flex gap-3 pt-4">
+                  <></>
+                  <Button
+                    className="flex-1 outline"
+                    onClick={() => setIsModalOpen(false)}
+                  >
+                    Close
+                  </Button>
+                </div>
+              </div>
+            </>
+          )}
+        </DialogContent>
+      </Dialog>
 
       <ChatBot />
     </div>

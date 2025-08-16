@@ -42,6 +42,7 @@ export default function SignupPage() {
 
   const { signup } = useAuth();
   const router = useRouter();
+
   // List of countries for the select dropdown
   const countries = [
     "Afghanistan",
@@ -262,12 +263,19 @@ export default function SignupPage() {
     setLoading(true);
 
     try {
+      // The signup function now handles creating the user with the id field automatically
       await signup(formData.email, formData.password, {
         fullName: formData.fullName,
         username: formData.username,
         country: formData.country,
         userType,
       });
+
+      // The auth context now automatically handles:
+      // - Creating the user in Firebase Auth
+      // - Setting the id field to match the Firebase Auth user ID
+      // - Saving the user profile to Firestore with the matching document ID
+
       router.push("/dashboard");
     } catch (error: any) {
       setError(error.message || "Failed to create account");

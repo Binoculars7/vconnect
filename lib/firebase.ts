@@ -257,6 +257,77 @@ export const getApplicationsByUser = async (userId: string) => {
   }
 }
 
+export const getUserProfile = async (userId: string) => {
+  try {
+    console.log("Fetching user profile for:", userId);
+
+    // Validate input
+    if (!userId || typeof userId !== "string" || userId.trim() === "") {
+      console.warn("getUserProfile: Valid userId is required");
+      return null;
+    }
+
+    try {
+      // First attempt: with orderBy
+      const q = query(
+        collection(db, "users"),
+        where("id", "==", userId),
+        orderBy("createdAt", "desc")
+      );
+      const snapshot = await getDocs(q);
+
+      if (snapshot.empty) {
+        console.log(`No user document found for userId: ${userId}`);
+        return null;
+      }
+
+      return snapshot.docs.map(doc => ({
+        id: doc.id,
+        ...convertTimestamp(doc.data())
+      }))[0]; // Return first match
+    } catch (indexError) {
+      // Retry if Firestore index/precondition error
+      if (
+        indexError instanceof Error &&
+        "code" in indexError &&
+        (indexError as FirestoreError).code === "failed-precondition"
+      ) {
+        console.warn("Missing index, retrying without orderBy...");
+
+        const q = query(
+          collection(db, "users"),
+          where("id", "==", userId)
+        );
+        const snapshot = await getDocs(q);
+
+        if (snapshot.empty) {
+          return null;
+        }
+
+        const users = snapshot.docs.map(doc => ({
+          id: doc.id,
+          ...convertTimestamp(doc.data())
+        }));
+
+        // Manual sort if createdAt exists
+        users.sort((a, b) =>
+          new Date(b.createdAt as string).getTime() - new Date(a.createdAt as string).getTime()
+        );
+
+        return users[0];
+      }
+
+      console.error("Firestore query error:", indexError);
+      return null;
+    }
+  } catch (error) {
+    console.error("Error fetching user profile:", error);
+    return null;
+  }
+};
+
+
+
 export const updateApplicationStatus = async (
   applicationId: string,
   status: 'approved' | 'declined'

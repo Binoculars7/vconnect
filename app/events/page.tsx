@@ -21,7 +21,22 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Calendar, MapPin, Search, Filter, AlertCircle } from "lucide-react";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import {
+  Calendar,
+  MapPin,
+  Search,
+  Filter,
+  AlertCircle,
+  Clock,
+  User,
+} from "lucide-react";
 import {
   getEvents,
   createApplication,
@@ -40,6 +55,8 @@ export default function EventsPage() {
   const [selectedCategory, setSelectedCategory] = useState("all");
   const [appliedEvents, setAppliedEvents] = useState<Set<string>>(new Set());
   const [applying, setApplying] = useState<Set<string>>(new Set());
+  const [selectedEvent, setSelectedEvent] = useState<Event | null>(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
 
   const categories = [
     "Environment",
@@ -122,7 +139,16 @@ export default function EventsPage() {
     return filtered;
   }, [events, searchTerm, selectedCategory]);
 
-  const handleApply = async (eventId: string) => {
+  const handleEventClick = (event: Event) => {
+    setSelectedEvent(event);
+    setIsModalOpen(true);
+  };
+
+  const handleApply = async (eventId: string, e?: React.MouseEvent) => {
+    if (e) {
+      e.stopPropagation(); // Prevent the card click event
+    }
+
     if (applying.has(eventId) || appliedEvents.has(eventId)) {
       return;
     }
@@ -193,6 +219,70 @@ export default function EventsPage() {
     } catch (error) {
       console.error("Error formatting date:", error);
       return "Date unavailable";
+    }
+  };
+
+  const formatDateLong = (dateInput: any): string => {
+    try {
+      let date: Date;
+
+      if (dateInput instanceof Date) {
+        date = dateInput;
+      } else if (
+        typeof dateInput === "string" ||
+        typeof dateInput === "number"
+      ) {
+        date = new Date(dateInput);
+      } else if (dateInput?.toDate) {
+        date = dateInput.toDate();
+      } else {
+        return "Date unavailable";
+      }
+
+      if (isNaN(date.getTime())) {
+        return "Invalid date";
+      }
+
+      return date.toLocaleDateString("en-US", {
+        weekday: "long",
+        year: "numeric",
+        month: "long",
+        day: "numeric",
+      });
+    } catch (error) {
+      console.error("Error formatting date:", error);
+      return "Date unavailable";
+    }
+  };
+
+  const formatTime = (dateInput: any): string => {
+    try {
+      let date: Date;
+
+      if (dateInput instanceof Date) {
+        date = dateInput;
+      } else if (
+        typeof dateInput === "string" ||
+        typeof dateInput === "number"
+      ) {
+        date = new Date(dateInput);
+      } else if (dateInput?.toDate) {
+        date = dateInput.toDate();
+      } else {
+        return "Time unavailable";
+      }
+
+      if (isNaN(date.getTime())) {
+        return "Invalid time";
+      }
+
+      return date.toLocaleTimeString("en-US", {
+        hour: "2-digit",
+        minute: "2-digit",
+      });
+    } catch (error) {
+      console.error("Error formatting time:", error);
+      return "Time unavailable";
     }
   };
 
@@ -300,9 +390,10 @@ export default function EventsPage() {
             {filteredEvents.map((event) => (
               <Card
                 key={event.id}
-                className="hover:shadow-lg transition-shadow"
+                className="hover:shadow-lg transition-shadow cursor-pointer"
+                onClick={() => handleEventClick(event)}
               >
-                <div className="h-48 bg-gradient-to-br bg-[#e7cb89] mt-[-25px]   dark:bg-amber-900 rounded-t-lg flex items-center justify-center">
+                <div className="h-48 bg-gradient-to-br bg-[#e7cb89] mt-[-25px] dark:bg-amber-900 rounded-t-lg flex items-center justify-center">
                   <Calendar className="w-16 h-16 text-orange-500 dark:text-white" />
                 </div>
                 <CardHeader>
@@ -343,13 +434,17 @@ export default function EventsPage() {
                   </div>
 
                   {appliedEvents.has(event.id) ? (
-                    <Button disabled className="w-full">
+                    <Button
+                      disabled
+                      className="w-full"
+                      onClick={(e) => e.stopPropagation()}
+                    >
                       Applied ✓
                     </Button>
                   ) : (
                     <Button
                       className="w-full bg-orange-500 hover:bg-orange-600"
-                      onClick={() => handleApply(event.id)}
+                      onClick={(e) => handleApply(event.id, e)}
                       disabled={applying.has(event.id)}
                     >
                       {applying.has(event.id) ? "Applying..." : "Apply Now"}
@@ -361,6 +456,149 @@ export default function EventsPage() {
           </div>
         )}
       </div>
+
+      {/* Event Details Modal */}
+      <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
+        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+          {selectedEvent && (
+            <>
+              <DialogHeader>
+                <div className="flex justify-between items-start">
+                  <div className="flex-1">
+                    <DialogTitle className="text-2xl font-bold text-left">
+                      {selectedEvent.name || "Untitled Event"}
+                    </DialogTitle>
+                    <div className="flex items-center gap-2 mt-2">
+                      <Badge variant="secondary" className="text-sm">
+                        {selectedEvent.category || "General"}
+                      </Badge>
+                      {appliedEvents.has(selectedEvent.id) && (
+                        <Badge
+                          variant="default"
+                          className="text-sm bg-green-100 text-green-800"
+                        >
+                          Applied ✓
+                        </Badge>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              </DialogHeader>
+
+              <div className="space-y-6">
+                {/* Event Banner */}
+                <div className="h-48 bg-gradient-to-br from-orange-400 to-orange-600 rounded-lg flex items-center justify-center">
+                  <Calendar className="w-20 h-20 text-white" />
+                </div>
+
+                {/* Event Details */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="space-y-3">
+                    <div className="flex items-center gap-3">
+                      <Calendar className="w-5 h-5 text-orange-500" />
+                      <div>
+                        <p className="font-medium">Date</p>
+                        <p className="text-sm text-gray-600 dark:text-gray-400">
+                          {formatDateLong(selectedEvent.time)}
+                        </p>
+                      </div>
+                    </div>
+
+                    <div className="flex items-center gap-3">
+                      <Clock className="w-5 h-5 text-orange-500" />
+                      <div>
+                        <p className="font-medium">Time</p>
+                        <p className="text-sm text-gray-600 dark:text-gray-400">
+                          {formatTime(selectedEvent.time)}
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="space-y-3">
+                    <div className="flex items-center gap-3">
+                      <MapPin className="w-5 h-5 text-orange-500" />
+                      <div>
+                        <p className="font-medium">Location</p>
+                        <p className="text-sm text-gray-600 dark:text-gray-400">
+                          {selectedEvent.venue || "Venue TBD"}
+                        </p>
+                      </div>
+                    </div>
+
+                    {selectedEvent.ownerName && (
+                      <div className="flex items-center gap-3">
+                        <User className="w-5 h-5 text-orange-500" />
+                        <div>
+                          <p className="font-medium">Organizer</p>
+                          <p className="text-sm text-gray-600 dark:text-gray-400">
+                            {selectedEvent.ownerName}
+                          </p>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                </div>
+
+                {/* Description */}
+                <div>
+                  <h3 className="font-semibold text-lg mb-3">
+                    About This Event
+                  </h3>
+                  <DialogDescription className="text-base leading-relaxed">
+                    {selectedEvent.description || "No description available"}
+                  </DialogDescription>
+                </div>
+
+                {/* Additional Details */}
+                <div className="space-y-3">
+                  {selectedEvent.sponsors && (
+                    <div>
+                      <h4 className="font-medium mb-2">Sponsors</h4>
+                      <p className="text-sm text-gray-600 dark:text-gray-400">
+                        {selectedEvent.sponsors}
+                      </p>
+                    </div>
+                  )}
+                  {selectedEvent.requirements && (
+                    <div>
+                      <h4 className="font-medium mb-2">Requirements</h4>
+                      <p className="text-sm text-gray-600 dark:text-gray-400">
+                        {selectedEvent.requirements}
+                      </p>
+                    </div>
+                  )}
+                  {selectedEvent.skills && (
+                    <div>
+                      <h4 className="font-medium mb-2">Skills Needed</h4>
+                      <p className="text-sm text-gray-600 dark:text-gray-400">
+                        {selectedEvent.skills}
+                      </p>
+                    </div>
+                  )}
+                </div>
+
+                {/* Action Buttons */}
+                <div className="flex gap-3 pt-4">
+                  {appliedEvents.has(selectedEvent.id) ? (
+                    <Button disabled className="flex-1">
+                      Applied ✓
+                    </Button>
+                  ) : (
+                    <></>
+                  )}
+                  <Button
+                    className="flex-1 flex-outline"
+                    onClick={() => setIsModalOpen(false)}
+                  >
+                    Close
+                  </Button>
+                </div>
+              </div>
+            </>
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
